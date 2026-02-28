@@ -251,3 +251,14 @@ class TestBankAccount(unittest.TestCase):
 class TestShoppingCart(unittest.TestCase):
     def setUp(self) -> None:
         pass
+
+    def test_invalid(self) -> None:
+        qty_string, price_negative = "two", Decimal(-13)
+
+        with self.assertRaises(ValueError):
+            self.item_base_cart.add_item(
+                sku="Impossible", unit_price=price_negative, qty=1
+            )
+
+        with self.assertRaises(TypeError):
+            self.item_base_cart.add_item(sku="2", unit_price=Decimal(2), qty=qty_string)
