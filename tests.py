@@ -1,13 +1,16 @@
 import unittest
 from decimal import Decimal
 from sqlite3 import Date
+from turtle import Shape
 
 from lab_2_part_1 import (
     BankAccount,
+    CartItem,
     DateRange,
     Money,
     PasswordPolicy,
     PasswordValidationResult,
+    ShoppingCart,
     Transaction,
 )
 
@@ -250,6 +253,29 @@ class TestBankAccount(unittest.TestCase):
 
 class TestShoppingCart(unittest.TestCase):
     def setUp(self) -> None:
+        self.item_base_cart = ShoppingCart()
+        self.item_half_off = ShoppingCart(discount_percent=Decimal(50))
+        self.item_dummy_element = CartItem(sku="Dummy", unit_price=Decimal(5), qty=1)
+
+    def _cartitem_to_dict(self, cart_item: CartItem) -> dict:
+        return {
+            "sku": cart_item.sku,
+            "unit_price": cart_item.unit_price,
+            "qty": cart_item.qty,
+        }
+
+    def test_single_compute(self) -> None:
+        self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
+        subtotal = self.item_base_cart.subtotal()
+        self.assertEqual(subtotal, 5)
+
+    def test_quantity_post_addition(self) -> None:
+        pass
+
+    def test_removal(self) -> None:
+        pass
+
+    def test_discount(self) -> None:
         pass
 
     def test_invalid(self) -> None:
