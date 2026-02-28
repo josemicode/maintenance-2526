@@ -256,6 +256,7 @@ class TestShoppingCart(unittest.TestCase):
         self.item_half_off = ShoppingCart(discount_percent=Decimal(50))
         self.item_dummy_element = CartItem(sku="Dummy", unit_price=Decimal(5), qty=1)
         self.item_four_elements = CartItem(sku="Box", unit_price=Decimal(2), qty=4)
+        self.item_pie_element = CartItem(sku="Pie", unit_price=Decimal(3.141592), qty=1)
 
     def _cartitem_to_dict(self, cart_item: CartItem) -> dict:
         return {
@@ -284,7 +285,9 @@ class TestShoppingCart(unittest.TestCase):
         self.assertNotIn(self.item_dummy_element, self.item_base_cart.items())
 
     def test_discount(self) -> None:
-        pass
+        self.item_half_off.add_item(**self._cartitem_to_dict(self.item_pie_element))
+        # self.assertEqual(self.item_half_off.total(), 4)
+        self.assertEqual(self.item_half_off.total(), Decimal("1.57"))
 
     def test_invalid(self) -> None:
         qty_string, price_negative = "two", Decimal(-13)
