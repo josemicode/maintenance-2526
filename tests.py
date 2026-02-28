@@ -267,10 +267,14 @@ class TestShoppingCart(unittest.TestCase):
     def test_single_compute(self) -> None:
         self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
         subtotal = self.item_base_cart.subtotal()
+        
         self.assertEqual(subtotal, 5)
 
     def test_quantity_post_addition(self) -> None:
-        pass
+        self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
+        self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
+        
+        self.assertEqual(self.item_base_cart.total_items(), 2)
 
     def test_removal(self) -> None:
         pass
