@@ -1,7 +1,6 @@
 import unittest
 from decimal import Decimal
 from sqlite3 import Date
-from turtle import Shape
 
 from lab_2_part_1 import (
     BankAccount,
@@ -256,6 +255,7 @@ class TestShoppingCart(unittest.TestCase):
         self.item_base_cart = ShoppingCart()
         self.item_half_off = ShoppingCart(discount_percent=Decimal(50))
         self.item_dummy_element = CartItem(sku="Dummy", unit_price=Decimal(5), qty=1)
+        self.item_four_elements = CartItem(sku="Box", unit_price=Decimal(2), qty=4)
 
     def _cartitem_to_dict(self, cart_item: CartItem) -> dict:
         return {
@@ -267,17 +267,21 @@ class TestShoppingCart(unittest.TestCase):
     def test_single_compute(self) -> None:
         self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
         subtotal = self.item_base_cart.subtotal()
-        
+
         self.assertEqual(subtotal, 5)
 
     def test_quantity_post_addition(self) -> None:
         self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
         self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
-        
+
         self.assertEqual(self.item_base_cart.total_items(), 2)
 
     def test_removal(self) -> None:
-        pass
+        self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_dummy_element))
+        self.item_base_cart.add_item(**self._cartitem_to_dict(self.item_four_elements))
+        self.item_base_cart.remove_sku(self.item_dummy_element.sku)
+
+        self.assertNotIn(self.item_dummy_element, self.item_base_cart.items())
 
     def test_discount(self) -> None:
         pass
