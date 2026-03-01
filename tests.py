@@ -401,3 +401,23 @@ class TestLRUCache(unittest.TestCase):
 
         self.item_size_3.put(2, "two_updated")
         self.assertEqual(self.item_size_3.keys_mru_order(), (3, 1, 2))
+
+    def test_complex_eviction_scenario(self) -> None:
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+        self.item_size_3.put(3, "three")
+
+        self.item_size_3.get(1)
+        self.item_size_3.get(2)
+        self.item_size_3.get(3)
+        self.item_size_3.get(1)
+
+        self.item_size_3.put(4, "four")
+
+        self.assertEqual(self.item_size_3.size(), 3)
+        self.assertIsNone(self.item_size_3.get(2))
+        self.assertEqual(self.item_size_3.keys_mru_order(), (3, 1, 4))
+
+        self.assertEqual(self.item_size_3.get(1), "one")
+        self.assertEqual(self.item_size_3.get(3), "three")
+        self.assertEqual(self.item_size_3.get(4), "four")
