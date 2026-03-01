@@ -8,6 +8,7 @@ from lab_2_part_1 import (
     DateRange,
     LRUCache,
     Money,
+    PalindromeChecker,
     PasswordPolicy,
     PasswordValidationResult,
     ShoppingCart,
@@ -469,3 +470,19 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(self.item_size_4.get(5), "e")
 
         self.assertEqual(self.item_size_4.keys_mru_order(), (1, 2, 4, 5))
+
+
+class TestPalindromeChecker(unittest.TestCase):
+    def setUp(self) -> None:
+        self.item_restrictive = PalindromeChecker(
+            ignore_case=False, ignore_spaces=False, ignore_punctuation=False
+        )
+        self.item_case_agnostic = PalindromeChecker(
+            ignore_case=True, ignore_spaces=False, ignore_punctuation=False
+        )
+        self.item_space_agnostic = PalindromeChecker(
+            ignore_case=False, ignore_spaces=True, ignore_punctuation=False
+        )
+        self.item_punct_agnostic = PalindromeChecker(
+            ignore_case=False, ignore_spaces=False, ignore_punctuation=True
+        )
