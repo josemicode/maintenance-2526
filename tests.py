@@ -356,3 +356,34 @@ class TestLRUCache(unittest.TestCase):
         self.assertIsNone(self.item_size_2.get(1))
         self.assertEqual(self.item_size_2.get(2), "two")
         self.assertEqual(self.item_size_2.get(3), "three")
+
+    def test_recency_updates_on_get(self) -> None:
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+        self.item_size_3.put(3, "three")
+
+        self.item_size_3.get(1)
+
+        self.item_size_3.put(4, "four")
+
+        self.assertEqual(self.item_size_3.size(), 3)
+        self.assertIsNone(self.item_size_3.get(2))
+        self.assertEqual(self.item_size_3.get(1), "one")
+        self.assertEqual(self.item_size_3.get(3), "three")
+        self.assertEqual(self.item_size_3.get(4), "four")
+
+    def test_recency_updates_on_put_existing(self) -> None:
+
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+        self.item_size_3.put(3, "three")
+
+        self.item_size_3.put(1, "one_updated")
+
+        self.item_size_3.put(4, "four")
+
+        self.assertEqual(self.item_size_3.size(), 3)
+        self.assertIsNone(self.item_size_3.get(2))
+        self.assertEqual(self.item_size_3.get(1), "one_updated")
+        self.assertEqual(self.item_size_3.get(3), "three")
+        self.assertEqual(self.item_size_3.get(4), "four")
