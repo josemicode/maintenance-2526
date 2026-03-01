@@ -6,6 +6,7 @@ from lab_2_part_1 import (
     BankAccount,
     CartItem,
     DateRange,
+    LRUCache,
     Money,
     PasswordPolicy,
     PasswordValidationResult,
@@ -338,7 +339,6 @@ class TestLRUCache(unittest.TestCase):
         self.assertFalse(self.item_size_3.contains_key(2))
 
     def test_capacity_constraints(self) -> None:
-
         self.item_size_2.put(1, "one")
         self.item_size_2.put(2, "two")
         self.assertEqual(self.item_size_2.size(), 2)
@@ -387,3 +387,17 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(self.item_size_3.get(1), "one_updated")
         self.assertEqual(self.item_size_3.get(3), "three")
         self.assertEqual(self.item_size_3.get(4), "four")
+
+    def test_keys_mru_order(self) -> None:
+
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+        self.item_size_3.put(3, "three")
+
+        self.assertEqual(self.item_size_3.keys_mru_order(), (1, 2, 3))
+
+        self.item_size_3.get(1)
+        self.assertEqual(self.item_size_3.keys_mru_order(), (2, 3, 1))
+
+        self.item_size_3.put(2, "two_updated")
+        self.assertEqual(self.item_size_3.keys_mru_order(), (3, 1, 2))
