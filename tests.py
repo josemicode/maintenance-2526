@@ -319,3 +319,20 @@ class TestLRUCache(unittest.TestCase):
             LRUCache[int, str](0)
         with self.assertRaises(ValueError):
             LRUCache[int, str](-1)
+
+    def test_basic_put_and_get(self) -> None:
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+
+        self.assertEqual(self.item_size_3.get(1), "one")
+        self.assertEqual(self.item_size_3.get(2), "two")
+        self.assertEqual(self.item_size_3.size(), 2)
+
+    def test_get_nonexistent_key(self) -> None:
+        self.assertIsNone(self.item_size_3.get(1))
+        self.assertFalse(self.item_size_3.contains_key(1))
+
+    def test_contains_key(self) -> None:
+        self.item_size_3.put(1, "one")
+        self.assertTrue(self.item_size_3.contains_key(1))
+        self.assertFalse(self.item_size_3.contains_key(2))
