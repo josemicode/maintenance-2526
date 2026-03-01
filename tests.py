@@ -345,3 +345,14 @@ class TestLRUCache(unittest.TestCase):
 
         self.item_size_2.put(3, "three")
         self.assertEqual(self.item_size_2.size(), 2)
+
+    def test_eviction_behavior(self) -> None:
+        self.item_size_2.put(1, "one")
+        self.item_size_2.put(2, "two")
+
+        self.item_size_2.put(3, "three")
+
+        self.assertEqual(self.item_size_2.size(), 2)
+        self.assertIsNone(self.item_size_2.get(1))
+        self.assertEqual(self.item_size_2.get(2), "two")
+        self.assertEqual(self.item_size_2.get(3), "three")
