@@ -299,3 +299,23 @@ class TestShoppingCart(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             self.item_base_cart.add_item(sku="2", unit_price=Decimal(2), qty=qty_string)
+
+
+class TestLRUCache(unittest.TestCase):
+    def setUp(self) -> None:
+        self.item_size_1 = LRUCache[int, str](1)
+        self.item_size_2 = LRUCache[int, str](2)
+        self.item_size_3 = LRUCache[int, str](3)
+        self.item_size_4 = LRUCache[int, str](4)
+
+    def test_initialization(self) -> None:
+        cache = LRUCache[int, str](5)
+        self.assertEqual(cache.size(), 0)
+        self.assertFalse(cache.contains_key(1))
+
+        with self.assertRaises(TypeError):
+            LRUCache[int, str]("invalid")
+        with self.assertRaises(ValueError):
+            LRUCache[int, str](0)
+        with self.assertRaises(ValueError):
+            LRUCache[int, str](-1)
