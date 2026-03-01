@@ -529,3 +529,71 @@ class TestPalindromeChecker(unittest.TestCase):
 
         result = self.item_all_agnostic.normalize("A b, C!")
         self.assertEqual(result, "abc")
+
+    def test_is_palindrome_basic(self) -> None:
+        self.assertTrue(self.item_restrictive.is_palindrome("racecar"))
+        self.assertTrue(self.item_restrictive.is_palindrome("madam"))
+        self.assertTrue(self.item_restrictive.is_palindrome("a"))
+        self.assertTrue(self.item_restrictive.is_palindrome(""))
+
+        self.assertFalse(self.item_restrictive.is_palindrome("hello"))
+        self.assertFalse(self.item_restrictive.is_palindrome("racecars"))
+
+    def test_is_palindrome_with_spaces(self) -> None:
+        self.assertTrue(self.item_space_agnostic.is_palindrome("race car"))
+        self.assertTrue(
+            self.item_space_agnostic.is_palindrome("a man a plan a canal panama")
+        )
+
+        self.assertFalse(self.item_restrictive.is_palindrome("race car"))
+        self.assertFalse(
+            self.item_restrictive.is_palindrome("a man a plan a canal panama")
+        )
+
+    def test_is_palindrome_with_punctuation(self) -> None:
+        self.assertTrue(self.item_punct_agnostic.is_palindrome("racecar!"))
+        self.assertTrue(self.item_punct_agnostic.is_palindrome("madam?"))
+        self.assertTrue(self.item_punct_agnostic.is_palindrome("a.b.a"))
+
+        self.assertFalse(self.item_restrictive.is_palindrome("racecar!"))
+        self.assertFalse(self.item_restrictive.is_palindrome("madam?"))
+        self.assertTrue(self.item_restrictive.is_palindrome("a.b.a"))
+
+    def test_is_palindrome_with_case(self) -> None:
+        self.assertTrue(self.item_case_agnostic.is_palindrome("Racecar"))
+        self.assertTrue(self.item_case_agnostic.is_palindrome("Madam"))
+        self.assertTrue(self.item_case_agnostic.is_palindrome("Aba"))
+
+        self.assertFalse(self.item_restrictive.is_palindrome("Racecar"))
+        self.assertFalse(self.item_restrictive.is_palindrome("Madam"))
+        self.assertFalse(self.item_restrictive.is_palindrome("Aba"))
+
+    def test_is_palindrome_complex(self) -> None:
+        test_string = "A man, a plan, a canal: Panama!"
+
+        self.assertTrue(self.item_all_agnostic.is_palindrome(test_string))
+
+        no_punct_checker = PalindromeChecker(
+            ignore_case=True, ignore_spaces=True, ignore_punctuation=False
+        )
+        self.assertFalse(no_punct_checker.is_palindrome(test_string))
+
+        no_space_checker = PalindromeChecker(
+            ignore_case=True, ignore_spaces=False, ignore_punctuation=True
+        )
+        self.assertFalse(no_space_checker.is_palindrome(test_string))
+
+        no_case_checker = PalindromeChecker(
+            ignore_case=False, ignore_spaces=True, ignore_punctuation=True
+        )
+        self.assertFalse(no_case_checker.is_palindrome(test_string))
+
+    def test_is_palindrome_edge_cases(self) -> None:
+        self.assertTrue(self.item_restrictive.is_palindrome("a"))
+        self.assertTrue(self.item_all_agnostic.is_palindrome("a"))
+
+        self.assertTrue(self.item_all_agnostic.is_palindrome("   "))
+        self.assertTrue(self.item_all_agnostic.is_palindrome("!@#$%"))
+
+        self.assertTrue(self.item_restrictive.is_palindrome("12321"))
+        self.assertTrue(self.item_all_agnostic.is_palindrome("1 2 3 2 1"))
