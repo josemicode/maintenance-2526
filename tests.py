@@ -336,3 +336,12 @@ class TestLRUCache(unittest.TestCase):
         self.item_size_3.put(1, "one")
         self.assertTrue(self.item_size_3.contains_key(1))
         self.assertFalse(self.item_size_3.contains_key(2))
+
+    def test_capacity_constraints(self) -> None:
+
+        self.item_size_2.put(1, "one")
+        self.item_size_2.put(2, "two")
+        self.assertEqual(self.item_size_2.size(), 2)
+
+        self.item_size_2.put(3, "three")
+        self.assertEqual(self.item_size_2.size(), 2)
