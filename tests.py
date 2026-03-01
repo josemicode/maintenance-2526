@@ -434,3 +434,38 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(self.item_size_3.size(), 2)
         self.assertEqual(self.item_size_3.get(1), "one_updated")
         self.assertEqual(self.item_size_3.get(2), "two")
+
+    def test_edge_case_single_capacity(self) -> None:
+        self.item_size_1.put(1, "one")
+        self.assertEqual(self.item_size_1.size(), 1)
+        self.assertEqual(self.item_size_1.get(1), "one")
+
+        self.item_size_1.put(2, "two")
+        self.assertEqual(self.item_size_1.size(), 1)
+        self.assertIsNone(self.item_size_1.get(1))
+        self.assertEqual(self.item_size_1.get(2), "two")
+
+        self.item_size_1.get(2)
+        self.item_size_1.put(3, "three")
+        self.assertIsNone(self.item_size_1.get(2))
+        self.assertEqual(self.item_size_1.get(3), "three")
+
+    def test_mixed_operations(self) -> None:
+        self.item_size_4.put(1, "a")
+        self.item_size_4.put(2, "b")
+        self.item_size_4.put(3, "c")
+
+        self.item_size_4.get(1)
+        self.item_size_4.put(2, "b_updated")
+        self.item_size_4.put(4, "d")
+
+        self.item_size_4.put(5, "e")
+
+        self.assertEqual(self.item_size_4.size(), 4)
+        self.assertIsNone(self.item_size_4.get(3))
+        self.assertEqual(self.item_size_4.get(1), "a")
+        self.assertEqual(self.item_size_4.get(2), "b_updated")
+        self.assertEqual(self.item_size_4.get(4), "d")
+        self.assertEqual(self.item_size_4.get(5), "e")
+
+        self.assertEqual(self.item_size_4.keys_mru_order(), (1, 2, 4, 5))
