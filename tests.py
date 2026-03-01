@@ -486,3 +486,7 @@ class TestPalindromeChecker(unittest.TestCase):
         self.item_punct_agnostic = PalindromeChecker(
             ignore_case=False, ignore_spaces=False, ignore_punctuation=True
         )
+
+    def test_input_validation(self) -> None:
+        with self.assertRaises(TypeError):
+            self.item_restrictive.normalize(121)
