@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Dict, Generic, List, Optional, Tuple, TypeVar
 
@@ -144,41 +144,50 @@ class PasswordPolicy:
 
 
 class DateRange:
-    __slots__ = ("start", "end")
+    __slots__ = ("start", "days")
 
-    def __init__(self, start: date, end: date) -> None:
-        if not isinstance(start, date) or not isinstance(end, date):
-            raise TypeError("start and end must be datetime.date instances")
-        if start > end:
-            raise ValueError("start must be <= end")
+    def __init__(self, start: date, days: int) -> None:
+        if not isinstance(start, date):
+            raise TypeError("start must be a datetime.date instance")
+        if not isinstance(days, int):
+            raise TypeError("days must be an integer")
+        if days < 1:
+            raise ValueError("days must be >= 1")
         self.start = start
-        self.end = end
+        self.days = days
+
+    @property
+    def _end(self) -> date:
+        return self.start + timedelta(days=self.days - 1)
 
     def contains(self, d: date) -> bool:
         if not isinstance(d, date):
             raise TypeError("d must be a date")
-        return self.start <= d <= self.end
+        return self.start <= d <= self._end
 
     def days_inclusive(self) -> int:
-        return (self.end - self.start).days + 1
+        return self.days
 
     def overlaps(self, other: "DateRange") -> bool:
         if not isinstance(other, DateRange):
             raise TypeError("other must be DateRange")
-        return not (self.end < other.start or other.end < self.start)
+        return not (self._end < other.start or other._end < self.start)
 
     def intersection(self, other: "DateRange") -> Optional["DateRange"]:
         if not self.overlaps(other):
             return None
-        return DateRange(max(self.start, other.start), min(self.end, other.end))
+        intersection_start = max(self.start, other.start)
+        intersection_end = min(self._end, other._end)
+        intersection_days = (intersection_end - intersection_start).days + 1
+        return DateRange(intersection_start, intersection_days)
 
     def __repr__(self) -> str:
-        return f"DateRange(start={self.start!r}, end={self.end!r})"
+        return f"DateRange(start={self.start!r}, days={self.days!r})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DateRange):
             return False
-        return self.start == other.start and self.end == other.end
+        return self.start == other.start and self.days == other.days
 
 
 # ----------------------------

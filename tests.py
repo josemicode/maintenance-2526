@@ -65,16 +65,16 @@ class TestMoney(unittest.TestCase):
 
 class TestDateRange(unittest.TestCase):
     def setUp(self) -> None:
-        self.item_march_to_may = DateRange(Date(2026, 3, 1), Date(2026, 5, 31))
-        self.item_cure = DateRange(Date(1997, 8, 4), Date(1997, 8, 14))
-        self.item_matrix = DateRange(Date(2999, 6, 1), Date(2999, 7, 2))
-        self.item_10_before_march = DateRange(Date(2026, 2, 19), Date(2026, 3, 1))
-        self.item_10_after_may = DateRange(Date(2026, 5, 31), Date(2026, 6, 10))
-        self.item_over_march = DateRange(Date(2026, 2, 26), Date(2026, 3, 3))
-        self.item_over_may = DateRange(Date(2026, 5, 29), Date(2026, 6, 3))
-        self.item_starts_march = DateRange(Date(2026, 3, 1), Date(2026, 3, 10))
-        self.item_ends_may = DateRange(Date(2026, 5, 22), Date(2026, 5, 31))
-        self.item_april = DateRange(Date(2026, 4, 7), Date(2026, 4, 11))
+        self.item_march_to_may = DateRange(Date(2026, 3, 1), 92)  # Mar 1 to May 31
+        self.item_cure = DateRange(Date(1997, 8, 4), 11)  # Aug 4 to Aug 14
+        self.item_matrix = DateRange(Date(2999, 6, 1), 32)  # Jun 1 to Jul 2
+        self.item_10_before_march = DateRange(Date(2026, 2, 19), 11)  # Feb 19 to Mar 1
+        self.item_10_after_may = DateRange(Date(2026, 5, 31), 11)  # May 31 to Jun 10
+        self.item_over_march = DateRange(Date(2026, 2, 26), 6)  # Feb 26 to Mar 3
+        self.item_over_may = DateRange(Date(2026, 5, 29), 6)  # May 29 to Jun 3
+        self.item_starts_march = DateRange(Date(2026, 3, 1), 10)  # Mar 1 to Mar 10
+        self.item_ends_may = DateRange(Date(2026, 5, 22), 10)  # May 22 to May 31
+        self.item_april = DateRange(Date(2026, 4, 7), 5)  # Apr 7 to Apr 11
 
     def test_contains(self) -> None:
         self.assertTrue(self.item_march_to_may.contains(Date(2026, 4, 7)))
@@ -102,19 +102,19 @@ class TestDateRange(unittest.TestCase):
     def test_intersection(self) -> None:
         self.assertEqual(
             self.item_march_to_may.intersection(self.item_10_before_march),
-            DateRange(Date(2026, 3, 1), Date(2026, 3, 1)),
+            DateRange(Date(2026, 3, 1), 1),  # Single day intersection
         )
         self.assertEqual(
             self.item_march_to_may.intersection(self.item_10_after_may),
-            DateRange(Date(2026, 5, 31), Date(2026, 5, 31)),
+            DateRange(Date(2026, 5, 31), 1),  # Single day intersection
         )
         self.assertEqual(
             self.item_march_to_may.intersection(self.item_over_march),
-            DateRange(Date(2026, 3, 1), Date(2026, 3, 3)),
+            DateRange(Date(2026, 3, 1), 3),  # Mar 1 to Mar 3 = 3 days
         )
         self.assertEqual(
             self.item_march_to_may.intersection(self.item_over_may),
-            DateRange(Date(2026, 5, 29), Date(2026, 5, 31)),
+            DateRange(Date(2026, 5, 29), 3),  # May 29 to May 31 = 3 days
         )
         self.assertEqual(
             self.item_march_to_may.intersection(self.item_starts_march),
@@ -132,7 +132,8 @@ class TestDateRange(unittest.TestCase):
 
     def test_equality_operator(self) -> None:
         self.assertTrue(
-            self.item_april == DateRange(Date(2026, 4, 7), Date(2026, 4, 11))
+            self.item_april
+            == DateRange(Date(2026, 4, 7), 5)  # Apr 7 to Apr 11 = 5 days
         )
 
         self.assertFalse(self.item_cure == self.item_matrix)
