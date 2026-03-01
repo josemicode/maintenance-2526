@@ -486,7 +486,69 @@ class TestPalindromeChecker(unittest.TestCase):
         self.item_punct_agnostic = PalindromeChecker(
             ignore_case=False, ignore_spaces=False, ignore_punctuation=True
         )
+        self.item_all_agnostic = PalindromeChecker(
+            ignore_case=True, ignore_spaces=True, ignore_punctuation=True
+        )
 
     def test_input_validation(self) -> None:
         with self.assertRaises(TypeError):
             self.item_restrictive.normalize(121)
+
+    def test_normalize_spaces(self) -> None:
+        """Test that spaces are normalized according to configuration"""
+        # Test with ignore_spaces=True (default)
+        result = self.item_space_agnostic.normalize("a b c")
+        self.assertEqual(result, "abc")
+
+        # Test with ignore_spaces=False
+        result = self.item_restrictive.normalize("a b c")
+        self.assertEqual(result, "a b c")
+
+        # Test with different types of whitespace
+        result = self.item_space_agnostic.normalize("a\tb\nc")
+        self.assertEqual(result, "abc")
+
+        # Test mixed configuration
+        checker = PalindromeChecker(
+            ignore_case=True, ignore_spaces=True, ignore_punctuation=False
+        )
+        result = checker.normalize("A B C!")
+        self.assertEqual(result, "abc!")
+
+    def test_normalize_punctuation(self) -> None:
+        """Test that punctuation is normalized according to configuration"""
+        # Test with ignore_punctuation=True
+        result = self.item_punct_agnostic.normalize("a,b.c!")
+        self.assertEqual(result, "abc")
+
+        # Test with ignore_punctuation=False
+        result = self.item_restrictive.normalize("a,b.c!")
+        self.assertEqual(result, "a,b.c!")
+
+        # Test various punctuation characters
+        result = self.item_punct_agnostic.normalize("a@b#c$d%e^f&g*h(i)j")
+        self.assertEqual(result, "abcdefghij")
+
+        # Test that spaces are preserved when ignore_punctuation=True but ignore_spaces=False
+        checker = PalindromeChecker(
+            ignore_case=False, ignore_spaces=False, ignore_punctuation=True
+        )
+        result = checker.normalize("a, b. c!")
+        self.assertEqual(result, "a b c")
+
+    def test_normalize_case(self) -> None:
+        """Test that case is normalized according to configuration"""
+        # Test with ignore_case=True (default)
+        result = self.item_case_agnostic.normalize("AbC")
+        self.assertEqual(result, "abc")
+
+        # Test with ignore_case=False
+        result = self.item_restrictive.normalize("AbC")
+        self.assertEqual(result, "AbC")
+
+        # Test mixed case with spaces and punctuation
+        checker = PalindromeChecker(
+            ignore_case=True, ignore_spaces=True, ignore_punctuation=True
+        )
+        result = checker.normalize("A b, C!")
+        self.assertEqual(result, "abc")
