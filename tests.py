@@ -421,3 +421,16 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(self.item_size_3.get(1), "one")
         self.assertEqual(self.item_size_3.get(3), "three")
         self.assertEqual(self.item_size_3.get(4), "four")
+
+    def test_update_value_same_key(self) -> None:
+        self.item_size_3.put(1, "one")
+        self.item_size_3.put(2, "two")
+
+        self.assertEqual(self.item_size_3.size(), 2)
+        self.assertEqual(self.item_size_3.get(1), "one")
+
+        self.item_size_3.put(1, "one_updated")
+
+        self.assertEqual(self.item_size_3.size(), 2)
+        self.assertEqual(self.item_size_3.get(1), "one_updated")
+        self.assertEqual(self.item_size_3.get(2), "two")
