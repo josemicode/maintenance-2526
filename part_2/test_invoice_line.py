@@ -1,7 +1,7 @@
 import unittest
 from decimal import Decimal
 
-from lab_2_part_2 import CreditNoteBillItem, Invoice, InvoiceLine, PartialBilling
+from lab_2_part_2 import CreditNoteBillItem, InvoiceLine, PartialBilling
 
 
 class PartialBillingStub(PartialBilling):
@@ -10,10 +10,11 @@ class PartialBillingStub(PartialBilling):
 
 
 class CreditNoteBillItemStub(CreditNoteBillItem):
-    #!FIXME
-    def __init__(self, typeDeltaKg: Decimal = Decimal(0), target: InvoiceLine,) -> None:
+    def __init__(self, typeDeltaKg: Decimal = Decimal(0)) -> None:
         self.typeDeltaKg = typeDeltaKg
-        self.target = target
+        self.target = InvoiceLine(
+            seq=-1, description="dummy", unitPriceEURPerKg=Decimal(0), qtyKg=Decimal(0)
+        )
 
 
 class PriceAdjustmentBillItem:
@@ -40,3 +41,4 @@ class TestInvoiceLine(unittest.TestCase):
         self.assertIn(
             self.credit_note_no_type, self.invoice_line_20_qty.credit_note_items
         )
+        self.assertEqual(self.credit_note_no_type.target, self.invoice_line_20_qty)
