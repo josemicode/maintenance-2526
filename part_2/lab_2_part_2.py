@@ -5,10 +5,10 @@ from datetime import date
 from decimal import Decimal
 from typing import List, Optional, Union
 
-
 # -----------------------
 # Low-level value objects
 # -----------------------
+
 
 @dataclass(slots=True, frozen=True)
 class Barrel:
@@ -27,12 +27,15 @@ class PartialBilling:
 # -----------------------
 # (Defined later; used for annotations inside InvoiceLine)
 class CreditNoteBillItem: ...
+
+
 class PriceAdjustmentBillItem: ...
 
 
 # -----------------------
 # Core domain: Invoice / lines
 # -----------------------
+
 
 @dataclass
 class InvoiceLine:
@@ -42,8 +45,12 @@ class InvoiceLine:
     qtyKg: Decimal
 
     partials: List[PartialBilling] = field(default_factory=list)
-    credit_note_items: List[CreditNoteBillItem] = field(default_factory=list, repr=False)
-    price_adjustment_items: List[PriceAdjustmentBillItem] = field(default_factory=list, repr=False)
+    credit_note_items: List[CreditNoteBillItem] = field(
+        default_factory=list, repr=False
+    )
+    price_adjustment_items: List[PriceAdjustmentBillItem] = field(
+        default_factory=list, repr=False
+    )
 
     # ---- relationship management helpers ----
 
@@ -77,7 +84,9 @@ class InvoiceLine:
         clamped at 0
         """
         already_billed = sum((p.billedKg for p in self.partials), Decimal("0"))
-        credit_delta = sum((i.typeDeltaKg for i in self.credit_note_items), Decimal("0"))
+        credit_delta = sum(
+            (i.typeDeltaKg for i in self.credit_note_items), Decimal("0")
+        )
         remaining = self.qtyKg - already_billed + credit_delta
         return max(Decimal("0"), remaining)
 
@@ -86,7 +95,10 @@ class InvoiceLine:
         Depends on PriceAdjustmentBillItems.
         effective = base + sum(price_deltas)
         """
-        delta = sum((i.deltaUnitPriceEURPerKg for i in self.price_adjustment_items), Decimal("0"))
+        delta = sum(
+            (i.deltaUnitPriceEURPerKg for i in self.price_adjustment_items),
+            Decimal("0"),
+        )
         return self.unitPriceEURPerKg + delta
 
     @property
@@ -124,7 +136,10 @@ class Invoice:
         total_kilos = self.kilos_to_bill()
         if total_kilos == 0:
             return Decimal("0")
-        weighted_sum = sum((line.unit_price() * line.kilos_to_bill() for line in self.lines), Decimal("0"))
+        weighted_sum = sum(
+            (line.unit_price() * line.kilos_to_bill() for line in self.lines),
+            Decimal("0"),
+        )
         return weighted_sum / total_kilos
 
     @property
@@ -135,6 +150,7 @@ class Invoice:
 # -----------------------
 # Credit note / items
 # -----------------------
+
 
 @dataclass
 class CreditNoteBillItem:
@@ -173,12 +189,16 @@ class CreditNote:
         NOTE: Real accounting may treat credit notes as negative totals, etc.
         Adjust sign conventions as needed.
         """
-        return sum((item.typeDeltaKg * item.target.unit_price() for item in self.items), Decimal("0"))
+        return sum(
+            (item.typeDeltaKg * item.target.unit_price() for item in self.items),
+            Decimal("0"),
+        )
 
 
 # -----------------------
 # Price adjustment / items
 # -----------------------
+
 
 @dataclass
 class PriceAdjustmentBillItem:
@@ -227,6 +247,7 @@ class Provider:
     """
     Provider has a list of bills (Invoice, CreditNote, PriceAdjustmentBill).
     """
+
     name: str
     bills: List[Bill] = field(default_factory=list)
 
@@ -261,7 +282,9 @@ class Provider:
         total_kilos = sum((inv.kilos_to_bill() for inv in invoices), Decimal("0"))
         if total_kilos == 0:
             return Decimal("0")
-        weighted_sum = sum((inv.unit_price() * inv.kilos_to_bill() for inv in invoices), Decimal("0"))
+        weighted_sum = sum(
+            (inv.unit_price() * inv.kilos_to_bill() for inv in invoices), Decimal("0")
+        )
         return weighted_sum / total_kilos
 
     def total_invoice_amount(self) -> Decimal:
@@ -276,18 +299,34 @@ if __name__ == "__main__":
     provider = Provider(name="ACME Provider")
 
     inv = Invoice(number="INV-001", date=date.today(), currency="EUR")
-    line1 = InvoiceLine(seq=1, description="Line A", unitPriceEURPerKg=Decimal("2.00"), qtyKg=Decimal("100"))
-    line2 = InvoiceLine(seq=2, description="Line B", unitPriceEURPerKg=Decimal("3.00"), qtyKg=Decimal("50"))
+    line1 = InvoiceLine(
+        seq=1,
+        description="Line A",
+        unitPriceEURPerKg=Decimal("2.00"),
+        qtyKg=Decimal("100"),
+    )
+    line2 = InvoiceLine(
+        seq=2,
+        description="Line B",
+        unitPriceEURPerKg=Decimal("3.00"),
+        qtyKg=Decimal("50"),
+    )
 
     inv.add_line(line1)
     inv.add_line(line2)
 
     # Partials
-    line1.add_partial_billing(PartialBilling(billedKg=Decimal("30"), barrel=Barrel(code="B1", netKg=Decimal("30"))))
+    line1.add_partial_billing(
+        PartialBilling(
+            billedKg=Decimal("30"), barrel=Barrel(code="B1", netKg=Decimal("30"))
+        )
+    )
 
     # Credit note affecting line1
     cn = CreditNote(number="CN-001", date=date.today(), currency="EUR")
-    cn_item = CreditNoteBillItem(seq=1, typeDeltaKg=Decimal("-10"), reason="Return", target=line1)
+    cn_item = CreditNoteBillItem(
+        seq=1, typeDeltaKg=Decimal("-10"), reason="Return", target=line1
+    )
     cn.add_item(cn_item)
 
     # Price adjustment affecting line2
