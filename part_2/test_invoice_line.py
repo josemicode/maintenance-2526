@@ -9,34 +9,48 @@ from lab_2_part_2 import (
 )
 
 
-class PartialBillingStub(PartialBilling):
+class PartialBillingStub:
     def __init__(self, billedKg: Decimal = Decimal(0)) -> None:
         self.billedKg = billedKg
         self.barrel = None
 
 
-class CreditNoteBillItemStub(CreditNoteBillItem):
-    def __init__(self, typeDeltaKg: Decimal = Decimal(0)) -> None:
+class CreditNoteBillItemStub:
+    def __init__(
+        self, invoice_line: InvoiceLine, typeDeltaKg: Decimal = Decimal(0)
+    ) -> None:
         self.seq = 0
         self.typeDeltaKg = typeDeltaKg
         self.reason = "test"
+        self.invoice_line = invoice_line
 
-        self.target = InvoiceLine(
-            seq=-1, description="dummy", unitPriceEURPerKg=Decimal(0), qtyKg=Decimal(0)
-        )
+    @property
+    def target(self) -> InvoiceLine:
+        return self.invoice_line
+
+    @target.setter
+    def target(self, invoice_line: InvoiceLine) -> None:
+        self.invoice_line = invoice_line
 
 
-class PriceAdjustmentBillItemStub(PriceAdjustmentBillItem):
-    def __init__(self, deltaUnitPriceEURPerKg: Decimal = Decimal(0)) -> None:
+class PriceAdjustmentBillItemStub:
+    def __init__(
+        self, invoice_line: InvoiceLine, deltaUnitPriceEURPerKg: Decimal = Decimal(0)
+    ) -> None:
         self.seq = 0
         self.deltaUnitPriceEURPerKg = deltaUnitPriceEURPerKg
         self.qtyBasis = Decimal(0)
         self.deltaTotal = Decimal(0)
         self.reason = "test"
+        self.invoice_line = invoice_line
 
-        self.target = InvoiceLine(
-            seq=-1, description="dummy", unitPriceEURPerKg=Decimal(0), qtyKg=Decimal(0)
-        )
+    @property
+    def target(self) -> InvoiceLine:
+        return self.invoice_line
+
+    @target.setter
+    def target(self, invoice_line: InvoiceLine) -> None:
+        self.invoice_line = invoice_line
 
 
 class TestInvoiceLine(unittest.TestCase):
@@ -57,11 +71,17 @@ class TestInvoiceLine(unittest.TestCase):
 
         self.partial_not_billed = PartialBillingStub()
         self.partial_20_billed = PartialBillingStub(Decimal(20))
-        self.credit_note_no_type = CreditNoteBillItemStub()
-        self.credit_note_10_type = CreditNoteBillItemStub(Decimal(10))
-        self.price_adj_zero = PriceAdjustmentBillItemStub()
-        self.price_adj_1p5 = PriceAdjustmentBillItemStub(Decimal(1.5))
-        self.price_adj_2 = PriceAdjustmentBillItemStub(Decimal(2.0))
+        self.credit_note_no_type = CreditNoteBillItemStub(self.invoice_line_zero_qty)
+        self.credit_note_10_type = CreditNoteBillItemStub(
+            self.invoice_line_zero_qty, Decimal(10)
+        )
+        self.price_adj_zero = PriceAdjustmentBillItemStub(self.invoice_line_zero_qty)
+        self.price_adj_1p5 = PriceAdjustmentBillItemStub(
+            self.invoice_line_zero_qty, Decimal(1.5)
+        )
+        self.price_adj_2 = PriceAdjustmentBillItemStub(
+            self.invoice_line_zero_qty, Decimal(2.0)
+        )
 
     def test_add_partial_billing(self) -> None:
         self.invoice_line_20_qty.add_partial_billing(self.partial_not_billed)
