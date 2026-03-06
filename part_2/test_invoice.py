@@ -23,6 +23,9 @@ class InvoiceLineStub:
     def kilos_to_bill(self) -> Decimal:
         return self.qtyKg
 
+    def unit_price(self) -> Decimal:
+        return self.unitPriceEURPerKg
+
 
 class TestInvoice(unittest.TestCase):
     def setUp(self) -> None:
@@ -64,3 +67,28 @@ class TestInvoice(unittest.TestCase):
 
         result = self.invoice_eur.kilos_to_bill()
         self.assertEqual(result, 150)
+
+    def test_unit_price_no_line(self) -> None:
+        result = self.invoice_eur.unit_price()
+        self.assertEqual(result, 0)
+
+    def test_unit_price(self) -> None:
+        self.invoice_eur.add_line(self.inv_line_50_kg)
+
+        result = self.invoice_eur.unit_price()
+        self.assertEqual(result, 1)
+
+        self.invoice_eur.add_line(self.inv_line_100_kg_price_x2)
+
+        result = self.invoice_eur.unit_price()
+        self.assertAlmostEqual(result, Decimal("1.6666667"))
+
+    def test_total_no_line(self) -> None:
+        self.assertEqual(self.invoice_eur.total, 0)
+
+    def test_total(self) -> None:
+        self.invoice_eur.add_line(self.inv_line_50_kg)
+        self.assertEqual(self.invoice_eur.total, 10)
+
+        self.invoice_eur.add_line(self.inv_line_100_kg_price_x2)
+        self.assertEqual(self.invoice_eur.total, 20)
