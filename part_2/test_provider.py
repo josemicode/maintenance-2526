@@ -46,9 +46,25 @@ class TestProvider(unittest.TestCase):
 
         self.invoice_22kg_3x_1line = InvoiceStub(
             number="INV-002",
-            currency="EUR",
+            currency="JPY",
             kilos=Decimal(22.0),
             unit=Decimal(3.0),
+            total=Decimal(1.0),
+        )
+
+        self.invoice_0kg_1x_1line = InvoiceStub(
+            number="INV-003",
+            currency="USD",
+            kilos=Decimal(0.0),
+            unit=Decimal(1.0),
+            total=Decimal(1.0),
+        )
+
+        self.invoice_1kg_0x_1line = InvoiceStub(
+            number="INV-004",
+            currency="GBP",
+            kilos=Decimal(1.0),
+            unit=Decimal(0.0),
             total=Decimal(1.0),
         )
 
@@ -74,3 +90,28 @@ class TestProvider(unittest.TestCase):
 
         total = self.provider.total_kilos_to_bill()
         self.assertEqual(total, 15)
+
+    def test_avg_unit_price_zero(self) -> None:
+        avg = self.provider.avg_unit_price()
+        self.assertEqual(avg, 0)
+
+        self.provider.add_bill(self.invoice_0kg_1x_1line)
+
+        avg = self.provider.avg_unit_price()
+        self.assertEqual(avg, 0)
+
+        self.provider.add_bill(self.invoice_1kg_0x_1line)
+
+        avg = self.provider.avg_unit_price()
+        self.assertEqual(avg, 0)
+
+    def test_avg_unit_price(self) -> None:
+        self.provider.add_bill(self.invoice_15kg_2x_4lines)
+
+        avg = self.provider.avg_unit_price()
+        self.assertEqual(avg, 2)
+
+        self.provider.add_bill(self.invoice_22kg_3x_1line)
+
+        avg = self.provider.avg_unit_price()
+        self.assertAlmostEqual(avg, Decimal(2.594594594))
