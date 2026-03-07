@@ -1,9 +1,8 @@
 import unittest
 from datetime import date
 from decimal import Decimal
-from typing import List
 
-from lab_2_part_2 import InvoiceLine, Provider
+from lab_2_part_2 import Provider
 
 
 class InvoiceStub:
@@ -37,10 +36,41 @@ class InvoiceStub:
 class TestProvider(unittest.TestCase):
     def setUp(self) -> None:
         self.provider = Provider(name="ACME")
-        self.invoice_ = InvoiceStub(
+        self.invoice_15kg_2x_4lines = InvoiceStub(
             number="INV-001",
             currency="EUR",
             kilos=Decimal(15.0),
             unit=Decimal(2.0),
             total=Decimal(4.0),
         )
+
+        self.invoice_22kg_3x_1line = InvoiceStub(
+            number="INV-002",
+            currency="EUR",
+            kilos=Decimal(22.0),
+            unit=Decimal(3.0),
+            total=Decimal(1.0),
+        )
+
+    def test_add_bill(self) -> None:
+        self.provider.add_bill(self.invoice_15kg_2x_4lines)
+        self.assertIn(self.invoice_15kg_2x_4lines, self.provider.bills)
+
+    def test_add_another_bill(self) -> None:
+        self.provider.add_bill(self.invoice_15kg_2x_4lines)
+        self.assertIn(self.invoice_15kg_2x_4lines, self.provider.bills)
+
+        self.provider.add_bill(self.invoice_22kg_3x_1line)
+        self.assertIn(self.invoice_15kg_2x_4lines, self.provider.bills)
+
+        self.assertEqual(len(self.provider.bills), 2)
+
+    def test_no_kilos_to_bill(self) -> None:
+        total = self.provider.total_kilos_to_bill()
+        self.assertEqual(total, 0)
+
+    def test_total_kilos_to_bill(self) -> None:
+        self.provider.add_bill(self.invoice_15kg_2x_4lines)
+
+        total = self.provider.total_kilos_to_bill()
+        self.assertEqual(total, 15)

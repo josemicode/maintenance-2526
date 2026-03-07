@@ -272,23 +272,23 @@ class Provider:
         """
         Sum kilos_to_bill across all invoices.
         """
-        return sum((inv.kilos_to_bill() for inv in self.invoices()), Decimal("0"))
+        return sum((inv.kilos_to_bill() for inv in self.bills), Decimal("0"))
 
     def avg_unit_price(self) -> Decimal:
         """
         Weighted average unit price across all invoices by their billable kilos.
         """
         invoices = self.invoices()
-        total_kilos = sum((inv.kilos_to_bill() for inv in invoices), Decimal("0"))
+        total_kilos = sum((inv.kilos_to_bill() for inv in self.bills), Decimal("0"))
         if total_kilos == 0:
             return Decimal("0")
         weighted_sum = sum(
-            (inv.unit_price() * inv.kilos_to_bill() for inv in invoices), Decimal("0")
+            (inv.unit_price() * inv.kilos_to_bill() for inv in self.bills), Decimal("0")
         )
         return weighted_sum / total_kilos
 
     def total_invoice_amount(self) -> Decimal:
-        return sum((inv.total for inv in self.invoices()), Decimal("0"))
+        return sum((inv.total for inv in self.bills), Decimal("0"))
 
 
 # -----------------------
