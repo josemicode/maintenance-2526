@@ -115,3 +115,18 @@ class TestProvider(unittest.TestCase):
 
         avg = self.provider.avg_unit_price()
         self.assertAlmostEqual(avg, Decimal(2.594594594))
+
+    def test_invoice_amount_no_invoice(self) -> None:
+        total = self.provider.total_invoice_amount()
+        self.assertEqual(total, 0)
+
+    def test_invoice_amount(self) -> None:
+        self.provider.add_bill(self.invoice_15kg_2x_4lines)
+
+        total = self.provider.total_invoice_amount()
+        self.assertEqual(total, 4)
+
+        self.provider.add_bill(self.invoice_22kg_3x_1line)
+
+        total = self.provider.total_invoice_amount()
+        self.assertEqual(total, 5)
