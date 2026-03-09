@@ -2,7 +2,12 @@ import unittest
 from decimal import Decimal
 from unittest.mock import Mock
 
-from lab_2_part_3 import CreditNoteBillItem, InvoiceLine, PartialBilling
+from lab_2_part_3 import (
+    CreditNoteBillItem,
+    InvoiceLine,
+    PartialBilling,
+    PriceAdjustmentBill,
+)
 
 
 class TestInvoiceLine(unittest.TestCase):
@@ -39,14 +44,24 @@ class TestInvoiceLine(unittest.TestCase):
         self.credit_note_10_type.target = self.invoice_line_zero_qty
         self.credit_note_10_type.typeDeltaKg = Decimal(10)
 
-        # TODO: follow up!
-        self.price_adj_zero = PriceAdjustmentBillItemStub(self.invoice_line_zero_qty)
-        self.price_adj_1p5 = PriceAdjustmentBillItemStub(
-            self.invoice_line_zero_qty, Decimal(1.5)
-        )
-        self.price_adj_2 = PriceAdjustmentBillItemStub(
-            self.invoice_line_zero_qty, Decimal(2.0)
-        )
+        # self.price_adj_zero = PriceAdjustmentBillItemStub(self.invoice_line_zero_qty)
+        self.price_adj_zero = Mock(spec=PriceAdjustmentBill)
+        self.price_adj_zero.target = self.invoice_line_zero_qty
+        self.price_adj_zero.deltaUnitPriceEURPerKg = Decimal(0)
+
+        # self.price_adj_1p5 = PriceAdjustmentBillItemStub(
+        #     self.invoice_line_zero_qty, Decimal(1.5)
+        # )
+        self.price_adj_1p5 = Mock(spec=PriceAdjustmentBill)
+        self.price_adj_1p5.target = self.invoice_line_zero_qty
+        self.price_adj_1p5.deltaUnitPriceEURPerKg = Decimal(1.5)
+
+        # self.price_adj_2 = PriceAdjustmentBillItemStub(
+        #     self.invoice_line_zero_qty, Decimal(2.0)
+        # )
+        self.price_adj_2 = Mock(spec=PriceAdjustmentBill)
+        self.price_adj_2.target = self.invoice_line_zero_qty
+        self.price_adj_2.deltaUnitPriceEURPerKg = Decimal(2.0)
 
     def test_add_partial_billing(self) -> None:
         self.invoice_line_20_qty.add_partial_billing(self.partial_not_billed)
