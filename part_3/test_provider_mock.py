@@ -9,6 +9,9 @@ class TestProvider(unittest.TestCase):
     def setUp(self) -> None:
         self.provider = Provider(name="ACME")
 
+        self.provider.invoices = Mock(wraps=self.provider.invoices)
+        self.provider_incognito = Mock(wraps=self.provider)
+
         self.invoice_15kg_2x_4lines = create_autospec(spec=Invoice, instance=True)
         self.invoice_15kg_2x_4lines.number = "INV-001"
         self.invoice_15kg_2x_4lines.currency = "EUR"
@@ -107,3 +110,17 @@ class TestProvider(unittest.TestCase):
 
         total = self.provider.total_invoice_amount()
         self.assertEqual(total, 5)
+
+    def test_avg_unit_price_calls(self) -> None:
+        self.provider_incognito.add_bill(self.invoice_15kg_2x_4lines)
+        self.provider_incognito.add_bill(self.invoice_22kg_3x_1line)
+        self.provider_incognito.avg_unit_price()
+
+        self.provider.invoices.assert_called_once()
+        self.invoice_15kg_2x_4lines.kilos_to_bill.assert_called()
+        self.invoice_22kg_3x_1line.kilos_to_bill.assert_called()
+
+        self.assertEqual(self.invoice_15kg_2x_4lines.kilos_to_bill.call_count, 2)
+        self.assertEqual(self.invoice_22kg_3x_1line.kilos_to_bill.call_count, 2)
+
+        # Verdict: NOT optimal amount of calls per invoice
