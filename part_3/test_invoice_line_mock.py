@@ -32,33 +32,22 @@ class TestInvoiceLine(unittest.TestCase):
         self.partial_20_billed = Mock(spec=PartialBilling)
         self.partial_20_billed.billedKg = Decimal(20)
 
-        # self.credit_note_no_type = CreditNoteBillItemStub(self.invoice_line_zero_qty)
         self.credit_note_no_type = Mock(spec=CreditNoteBillItem)
         self.credit_note_no_type.target = self.invoice_line_zero_qty
         self.credit_note_no_type.typeDeltaKg = Decimal(0)
 
-        # self.credit_note_10_type = CreditNoteBillItemStub(
-        #     self.invoice_line_zero_qty, Decimal(10)
-        # )
         self.credit_note_10_type = Mock(spec=CreditNoteBillItem)
         self.credit_note_10_type.target = self.invoice_line_zero_qty
         self.credit_note_10_type.typeDeltaKg = Decimal(10)
 
-        # self.price_adj_zero = PriceAdjustmentBillItemStub(self.invoice_line_zero_qty)
         self.price_adj_zero = Mock(spec=PriceAdjustmentBill)
         self.price_adj_zero.target = self.invoice_line_zero_qty
         self.price_adj_zero.deltaUnitPriceEURPerKg = Decimal(0)
 
-        # self.price_adj_1p5 = PriceAdjustmentBillItemStub(
-        #     self.invoice_line_zero_qty, Decimal(1.5)
-        # )
         self.price_adj_1p5 = Mock(spec=PriceAdjustmentBill)
         self.price_adj_1p5.target = self.invoice_line_zero_qty
         self.price_adj_1p5.deltaUnitPriceEURPerKg = Decimal(1.5)
 
-        # self.price_adj_2 = PriceAdjustmentBillItemStub(
-        #     self.invoice_line_zero_qty, Decimal(2.0)
-        # )
         self.price_adj_2 = Mock(spec=PriceAdjustmentBill)
         self.price_adj_2.target = self.invoice_line_zero_qty
         self.price_adj_2.deltaUnitPriceEURPerKg = Decimal(2.0)
