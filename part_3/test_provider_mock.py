@@ -120,7 +120,8 @@ class TestProvider(unittest.TestCase):
         self.invoice_15kg_2x_4lines.kilos_to_bill.assert_called()
         self.invoice_22kg_3x_1line.kilos_to_bill.assert_called()
 
-        self.assertEqual(self.invoice_15kg_2x_4lines.kilos_to_bill.call_count, 2)
-        self.assertEqual(self.invoice_22kg_3x_1line.kilos_to_bill.call_count, 2)
+        # self.assertEqual(self.invoice_15kg_2x_4lines.kilos_to_bill.call_count, 2)
+        # self.assertEqual(self.invoice_22kg_3x_1line.kilos_to_bill.call_count, 2)
 
-        # Verdict: NOT optimal amount of calls per invoice
+        self.invoice_15kg_2x_4lines.kilos_to_bill.assert_called_once()
+        self.invoice_22kg_3x_1line.kilos_to_bill.assert_called_once()
