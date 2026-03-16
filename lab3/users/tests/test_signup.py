@@ -3,13 +3,14 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-
 User = get_user_model()
 
 
 class SignupEndpointTests(APITestCase):
-    def test_signup_create_successfully(self):
-        payload = {
+    def setUp(self):
+        self.signup_url = reverse("user-signup")
+
+        self.valid_payload = {
             "username": "newuser",
             "password": "strongpass123",
             "first_name": "New",
@@ -17,25 +18,36 @@ class SignupEndpointTests(APITestCase):
             "email": "newuser@example.com",
         }
 
-        response = self.client.post(reverse("user-signup"), payload, format="json")
+    def test_signup_create_successfully(self):
+        payload = self.valid_payload.copy()
+        response = self.client.post(self.signup_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["username"], payload["username"])
         self.assertEqual(response.data["email"], payload["email"])
+        self.assertEqual(response.data["first_name"], payload["first_name"])
+        self.assertEqual(response.data["last_name"], payload["last_name"])
+
         self.assertNotIn("password", response.data)
 
         created_user = User.objects.get(username=payload["username"])
         self.assertTrue(created_user.check_password(payload["password"]))
 
     def test_signup_fails_when_required_information_is_missing(self):
-        payload = {
-            "first_name": "Missing",
-            "email": "missing@example.com",
-        }
+        payload = self.valid_payload.copy()
+        payload.pop("first_name")
 
-        response = self.client.post(reverse("user-signup"), payload, format="json")
+        response = self.client.post(self.signup_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
-        self.assertIn("password", response.data)
+        self.assertIn("first_name", response.data)
+        self.assertFalse(User.objects.filter(email=payload["email"]).exists())
+
+        payload = self.valid_payload.copy()
+        payload.pop("last_name")
+
+        response = self.client.post(self.signup_url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("last_name", response.data)
         self.assertFalse(User.objects.filter(email=payload["email"]).exists())

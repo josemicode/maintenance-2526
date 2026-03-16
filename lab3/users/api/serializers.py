@@ -1,7 +1,6 @@
+from billing.models import Provider
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
-from billing.models import Provider
 
 User = get_user_model()
 
@@ -57,18 +56,23 @@ class SignupSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate_first_name(self, value):
-        if value == None or value == "":
-            raise serializers.ValidationError('First name is required')
+        if value is None or value == "":
+            raise serializers.ValidationError({"first_name": "First name is required"})
         return value
-    
-    def validate(self, attrs):
-        first_name = attrs.get('first_name', None)
-        if first_name == None or first_name == "":
-            raise serializers.ValidationError({
-                'first_name': 'First name is required.'
-            })
-        return attrs
 
+    def validate_last_name(self, value):
+        if value is None or value == "":
+            raise serializers.ValidationError({"last_name": "Last name is required"})
+        return value
+
+    def validate(self, attrs):
+        first_name = attrs.get("first_name", None)
+        self.validate_first_name(first_name)
+
+        last_name = attrs.get("last_name", None)
+        self.validate_last_name(last_name)
+
+        return attrs
 
     def create(self, validated_data):
         password = validated_data.pop("password")
