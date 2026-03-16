@@ -3,7 +3,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-
 User = get_user_model()
 
 
@@ -35,14 +34,20 @@ class SignupEndpointTests(APITestCase):
         self.assertTrue(created_user.check_password(payload["password"]))
 
     def test_signup_fails_when_required_information_is_missing(self):
-        payload = {
-            "first_name": "Missing",
-            "email": "missing@example.com",
-        }
+        payload = self.valid_payload.copy()
+        payload.pop("first_name")
 
-        response = self.client.post(reverse("user-signup"), payload, format="json")
+        response = self.client.post(self.signup_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
-        self.assertIn("password", response.data)
+        self.assertIn("first_name", response.data)
+        self.assertFalse(User.objects.filter(email=payload["email"]).exists())
+
+        payload = self.valid_payload.copy()
+        payload.pop("last_name")
+
+        response = self.client.post(self.signup_url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("last_name", response.data)
         self.assertFalse(User.objects.filter(email=payload["email"]).exists())
