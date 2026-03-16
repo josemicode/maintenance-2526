@@ -59,7 +59,6 @@ class ProviderEndpointTests(APITestCase):
         self.assertEqual(response.data[0]["tax_id"], provider.tax_id)
 
     def test_cross_add_barrel_to_invoice(self):
-        # Authenticate as user linked to provider_a (invoice owner)
         user = User.objects.create_user(
             username="testuser",
             password="password",
@@ -67,7 +66,6 @@ class ProviderEndpointTests(APITestCase):
         )
         self.client.force_authenticate(user=user)
 
-        # Attempt to add barrel from provider_b to invoice from provider_a via API
         url = reverse("invoice-add-line", args=[self.invoice.pk])
         data = {
             "barrel": self.barrel.id,
