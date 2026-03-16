@@ -19,11 +19,16 @@ class SignupEndpointTests(APITestCase):
             "email": "newuser@example.com",
         }
 
-        response = self.client.post(reverse("user-signup"), payload, format="json")
+    def test_signup_create_successfully(self):
+        payload = self.valid_payload.copy()
+        response = self.client.post(self.signup_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["username"], payload["username"])
         self.assertEqual(response.data["email"], payload["email"])
+        self.assertEqual(response.data["first_name"], payload["first_name"])
+        self.assertEqual(response.data["last_name"], payload["last_name"])
+
         self.assertNotIn("password", response.data)
 
         created_user = User.objects.get(username=payload["username"])
