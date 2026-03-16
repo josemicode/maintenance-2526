@@ -10,6 +10,31 @@ User = get_user_model()
 
 
 class ProviderEndpointTests(APITestCase):
+    def setUp(self):
+        self.provider_a = Provider.objects.create(
+            name="Acme Oils",
+            address="Main St 1",
+            tax_id="TAX-12345",
+        )
+
+        self.provider_b = Provider.objects.create(
+            name="Industrias Don Pepe",
+            address="Sesame St 1",
+            tax_id="TAX-78787",
+        )
+
+        self.invoice = Invoice.objects.create(
+            provider=self.provider_a, invoice_no="INV-001", issued_on="2024-10-10"
+        )
+
+        self.barrel = Barrel.objects.create(
+            provider=self.provider_b,
+            number="BAR-001",
+            oil_type="Virgin Extra",
+            liters=50,
+            billed=False,
+        )
+
     def test_provider_list_returns_name_and_tax_id(self):
         provider = Provider.objects.create(
             name="Acme Oils",
