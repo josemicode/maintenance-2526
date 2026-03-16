@@ -8,8 +8,10 @@ User = get_user_model()
 
 
 class SignupEndpointTests(APITestCase):
-    def test_signup_create_successfully(self):
-        payload = {
+    def setUp(self):
+        self.signup_url = reverse("user-signup")
+
+        self.valid_payload = {
             "username": "newuser",
             "password": "strongpass123",
             "first_name": "New",
