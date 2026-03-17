@@ -1,19 +1,19 @@
-from rest_framework import serializers, status, viewsets
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
-from ..models import Provider, Barrel, Invoice
-from .serializers import (
-    ProviderSerializer,
-    BarrelSerializer,
-    InvoiceSerializer,
-    InvoiceLineNestedSerializer,
-    InvoiceLineCreateSerializer,
-)
+from ..models import Barrel, Invoice, Provider
 from .filters import InvoiceFilter
+from .serializers import (
+    BarrelSerializer,
+    InvoiceLineCreateSerializer,
+    InvoiceLineNestedSerializer,
+    InvoiceSerializer,
+    ProviderSerializer,
+)
 
 
 class ProviderViewSet(viewsets.ModelViewSet):
@@ -64,7 +64,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     serializer_class = InvoiceSerializer
     queryset = (
         Invoice.objects.select_related("provider")
-        .prefetch_related("lines")
+        .prefetch_related("lines__barrel__provider")
         .all()
         .order_by("-issued_on", "-id")
     )

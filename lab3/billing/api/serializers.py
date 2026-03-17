@@ -1,8 +1,10 @@
 from decimal import Decimal
+
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework import serializers
-from ..models import Provider, Barrel, Invoice, InvoiceLine
+
+from ..models import Barrel, Invoice, InvoiceLine, Provider
 
 
 class ProviderSerializer(serializers.ModelSerializer):
@@ -10,18 +12,14 @@ class ProviderSerializer(serializers.ModelSerializer):
     liters_to_bill = serializers.SerializerMethodField()
 
     def get_billed_liters(self, obj: Provider) -> int:
-        return (
-            obj.barrels.filter(billed=True).aggregate(
-                total=Coalesce(Sum("liters"), 0)
-            )["total"]
-        )
+        return obj.barrels.filter(billed=True).aggregate(
+            total=Coalesce(Sum("liters"), 0)
+        )["total"]
 
     def get_liters_to_bill(self, obj: Provider) -> int:
-        return (
-            obj.barrels.filter(billed=False).aggregate(
-                total=Coalesce(Sum("liters"), 0)
-            )["total"]
-        )
+        return obj.barrels.filter(billed=False).aggregate(
+            total=Coalesce(Sum("liters"), 0)
+        )["total"]
 
     class Meta:
         model = Provider
@@ -81,3 +79,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "lines",
         ]
         read_only_fields = ["provider"]
+
+    def to_representation(self, instance):
+        # Validate provider consistency
+        for line in instance.lines.all():
+            if line.barrel.provider != instance.provider:
+                raise serializers.ValidationError(
+                    "barrel provider must match invoice provider"
+                )
+        return super().to_representation(instance)

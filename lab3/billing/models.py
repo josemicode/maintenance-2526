@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from django.db import models, transaction
+
 from django.core.validators import MinValueValidator
+from django.db import models, transaction
 
 
 class Provider(models.Model):
@@ -18,7 +19,9 @@ class Provider(models.Model):
 
 
 class Barrel(models.Model):
-    provider = models.ForeignKey(Provider, related_name="barrels", on_delete=models.CASCADE)
+    provider = models.ForeignKey(
+        Provider, related_name="barrels", on_delete=models.CASCADE
+    )
     number = models.CharField(max_length=64)
     oil_type = models.CharField(max_length=128)
     liters = models.PositiveIntegerField(validators=[MinValueValidator(1)])
@@ -32,7 +35,9 @@ class Barrel(models.Model):
 
 
 class Invoice(models.Model):
-    provider = models.ForeignKey(Provider, related_name="invoices", on_delete=models.CASCADE)
+    provider = models.ForeignKey(
+        Provider, related_name="invoices", on_delete=models.CASCADE
+    )
     invoice_no = models.CharField(max_length=64, unique=True)
     issued_on = models.DateField()
 
@@ -56,6 +61,9 @@ class Invoice(models.Model):
         if barrel.liters != liters:
             raise ValueError("liters must equal barrel.liters to bill the full barrel")
 
+        if barrel.provider != self.provider:
+            raise ValueError("barrel provider must match invoice provider")
+
         new_line = InvoiceLine.objects.create(
             invoice=self,
             barrel=barrel,
@@ -70,10 +78,14 @@ class Invoice(models.Model):
 
 class InvoiceLine(models.Model):
     invoice = models.ForeignKey(Invoice, related_name="lines", on_delete=models.CASCADE)
-    barrel = models.ForeignKey(Barrel, related_name="invoice_lines", on_delete=models.PROTECT)
+    barrel = models.ForeignKey(
+        Barrel, related_name="invoice_lines", on_delete=models.PROTECT
+    )
     liters = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     description = models.CharField(max_length=255)
-    unit_price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    unit_price = models.DecimalField(
+        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
 
     def __str__(self) -> str:
         return f"Line {self.id} ({self.liters} L @ {self.unit_price})"
