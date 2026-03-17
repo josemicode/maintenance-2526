@@ -44,6 +44,10 @@ class ProviderEndpointTests(APITestCase):
             username="regular_user", password="strongpass123", provider=self.provider_a
         )
 
+        self.superuser = User.objects.create_superuser(
+            username="admin", password="adminpass123", email="admin@example.com"
+        )
+
         self.provider_list_url = reverse("provider-list")
         self.invoice_list_url = reverse("invoice-list")
 
