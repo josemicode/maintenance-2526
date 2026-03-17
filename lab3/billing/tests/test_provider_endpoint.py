@@ -24,8 +24,12 @@ class ProviderEndpointTests(APITestCase):
             tax_id="TAX-78787",
         )
 
-        self.invoice = Invoice.objects.create(
+        self.invoice_a = Invoice.objects.create(
             provider=self.provider_a, invoice_no="INV-001", issued_on="2024-10-10"
+        )
+
+        self.invoice_b = Invoice.objects.create(
+            provider=self.provider_b, invoice_no="INV-002", issued_on="2025-5-5"
         )
 
         self.barrel = Barrel.objects.create(
@@ -34,6 +38,12 @@ class ProviderEndpointTests(APITestCase):
             oil_type="Virgin Extra",
             liters=50,
             billed=False,
+        )
+
+        # perhaps force_auth
+        self.user_a = User.objects.create_user(
+            username="regular_user",
+            password="strongpass123",
         )
 
     def test_provider_list_returns_name_and_tax_id(self):
@@ -66,7 +76,7 @@ class ProviderEndpointTests(APITestCase):
         )
         self.client.force_authenticate(user=user)
 
-        url = reverse("invoice-add-line", args=[self.invoice.pk])
+        url = reverse("invoice-add-line", args=[self.invoice_a.pk])
         data = {
             "barrel": self.barrel.id,
             "liters": 50,
@@ -84,3 +94,6 @@ class ProviderEndpointTests(APITestCase):
 
         self.barrel.refresh_from_db()
         self.assertFalse(self.barrel.billed)
+
+    def test_list_and_detail_visibility_as_regular_user(self):
+        self.client.force_authenticate(user=self.user_a)
