@@ -24,8 +24,12 @@ class ProviderEndpointTests(APITestCase):
             tax_id="TAX-78787",
         )
 
-        self.invoice = Invoice.objects.create(
+        self.invoice_a = Invoice.objects.create(
             provider=self.provider_a, invoice_no="INV-001", issued_on="2024-10-10"
+        )
+
+        self.invoice_b = Invoice.objects.create(
+            provider=self.provider_b, invoice_no="INV-002", issued_on="2025-5-5"
         )
 
         self.barrel = Barrel.objects.create(
@@ -36,37 +40,29 @@ class ProviderEndpointTests(APITestCase):
             billed=False,
         )
 
-    def test_provider_list_returns_name_and_tax_id(self):
-        provider = Provider.objects.create(
-            name="Acme Oils",
-            address="Main St 1",
-            tax_id="TAX-12345",
+        self.user_a = User.objects.create_user(
+            username="regular_user", password="strongpass123", provider=self.provider_a
         )
-        user = User.objects.create_user(
-            username="provider_user",
-            password="strongpass123",
-            provider=provider,
-        )
-        self.client.force_authenticate(user=user)
 
-        response = self.client.get(reverse("provider-list"))
+        self.provider_list_url = reverse("provider-list")
+        self.invoice_list_url = reverse("invoice-list")
+
+    def test_provider_list_returns_name_and_tax_id(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        response = self.client.get(self.provider_list_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertIn("name", response.data[0])
         self.assertIn("tax_id", response.data[0])
-        self.assertEqual(response.data[0]["name"], provider.name)
-        self.assertEqual(response.data[0]["tax_id"], provider.tax_id)
+        self.assertEqual(response.data[0]["name"], self.provider_a.name)
+        self.assertEqual(response.data[0]["tax_id"], self.provider_a.tax_id)
 
     def test_cross_add_barrel_to_invoice(self):
-        user = User.objects.create_user(
-            username="testuser",
-            password="password",
-            provider=self.provider_a,
-        )
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user_a)
 
-        url = reverse("invoice-add-line", args=[self.invoice.pk])
+        url = reverse("invoice-add-line", args=[self.invoice_a.pk])
         data = {
             "barrel": self.barrel.id,
             "liters": 50,
@@ -84,3 +80,21 @@ class ProviderEndpointTests(APITestCase):
 
         self.barrel.refresh_from_db()
         self.assertFalse(self.barrel.billed)
+
+    def test_list_and_detail_visibility_as_regular_user(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        response = self.client.get(self.invoice_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertIn("invoice_no", response.data[0])
+        self.assertEqual(response.data[0]["invoice_no"], self.invoice_a.invoice_no)
+
+        url = reverse("invoice-detail", args=[self.invoice_b.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(response.data), 1)
+        self.assertNotIn("invoice_no", response.data)
+        self.assertIn("detail", response.data)
