@@ -48,34 +48,19 @@ class ProviderEndpointTests(APITestCase):
         self.invoice_list_url = reverse("invoice-list")
 
     def test_provider_list_returns_name_and_tax_id(self):
-        provider = Provider.objects.create(
-            name="Acme Oils",
-            address="Main St 1",
-            tax_id="TAX-12345",
-        )
-        user = User.objects.create_user(
-            username="provider_user",
-            password="strongpass123",
-            provider=provider,
-        )
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user_a)
 
-        response = self.client.get(reverse("provider-list"))
+        response = self.client.get(self.provider_list_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertIn("name", response.data[0])
         self.assertIn("tax_id", response.data[0])
-        self.assertEqual(response.data[0]["name"], provider.name)
-        self.assertEqual(response.data[0]["tax_id"], provider.tax_id)
+        self.assertEqual(response.data[0]["name"], self.provider_a.name)
+        self.assertEqual(response.data[0]["tax_id"], self.provider_a.tax_id)
 
     def test_cross_add_barrel_to_invoice(self):
-        user = User.objects.create_user(
-            username="testuser",
-            password="password",
-            provider=self.provider_a,
-        )
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user_a)
 
         url = reverse("invoice-add-line", args=[self.invoice_a.pk])
         data = {
