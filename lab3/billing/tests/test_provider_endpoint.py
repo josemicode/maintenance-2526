@@ -51,6 +51,38 @@ class ProviderEndpointTests(APITestCase):
         self.provider_list_url = reverse("provider-list")
         self.invoice_list_url = reverse("invoice-list")
 
+    def test_access_providers_as_superuser(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        response = self.client.get(self.provider_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        provider_names = [provider["name"] for provider in response.data]
+        self.assertIn(self.provider_a.name, provider_names)
+        self.assertIn(self.provider_b.name, provider_names)
+
+    def test_access_providers_as_regular_user(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        response = self.client.get(self.provider_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        provider_names = [provider["name"] for provider in response.data]
+
+        self.assertIn(self.provider_a.name, provider_names)
+        self.assertNotIn(self.provider_b.name, provider_names)
+        self.assertEqual(len(response.data), 1)
+
+        url = reverse("provider-detail", args=[self.provider_a.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], self.provider_a.name)
+
+        url = reverse("provider-detail", args=[self.provider_b.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertNotIn(self.provider_b.name, response.data)
+
     def test_provider_list_returns_name_and_tax_id(self):
         self.client.force_authenticate(user=self.user_a)
 
