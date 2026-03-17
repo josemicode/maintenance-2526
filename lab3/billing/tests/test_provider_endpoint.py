@@ -98,3 +98,23 @@ class ProviderEndpointTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertNotIn("invoice_no", response.data)
         self.assertIn("detail", response.data)
+
+    def test_client_payload_modification(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        url = reverse("barrel-list")
+        # url = reverse("barrel")
+        data = {
+            "provider": self.provider_b.id,
+            "number": "BAR-030",
+            "oil_type": "DER",
+            "liters": 100,
+            "billed": True,
+        }
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("provider", response.data)
+        self.assertNotEqual(response.data["provider"], self.provider_b.id)
+        created_barrel = Barrel.objects.get(number="BAR-030")
+        self.assertEqual(created_barrel.provider, self.provider_a)
