@@ -40,11 +40,12 @@ class ProviderEndpointTests(APITestCase):
             billed=False,
         )
 
-        # perhaps force_auth
         self.user_a = User.objects.create_user(
-            username="regular_user",
-            password="strongpass123",
+            username="regular_user", password="strongpass123", provider=self.provider_a
         )
+
+        self.provider_list_url = reverse("provider-list")
+        self.invoice_list_url = reverse("invoice-list")
 
     def test_provider_list_returns_name_and_tax_id(self):
         provider = Provider.objects.create(
@@ -97,3 +98,18 @@ class ProviderEndpointTests(APITestCase):
 
     def test_list_and_detail_visibility_as_regular_user(self):
         self.client.force_authenticate(user=self.user_a)
+
+        response = self.client.get(self.invoice_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertIn("invoice_no", response.data[0])
+        self.assertEqual(response.data[0]["invoice_no"], self.invoice_a.invoice_no)
+
+        url = reverse("invoice-detail", args=[self.invoice_b.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(response.data), 1)
+        self.assertNotIn("invoice_no", response.data)
+        self.assertIn("detail", response.data)
