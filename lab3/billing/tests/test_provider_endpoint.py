@@ -220,3 +220,6 @@ class ProviderEndpointTests(APITestCase):
             response.data.get("detail", ""),
         )
         self.assertTrue(Invoice.objects.filter(pk=self.invoice_a.pk).exists())
+
+    def test_sample(self):
+        pass
