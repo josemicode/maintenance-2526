@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from billing.api.serializers import ProviderSerializer
 from billing.models import Barrel, Invoice, InvoiceLine, Provider
 
 User = get_user_model()
@@ -44,8 +45,81 @@ class ProviderEndpointTests(APITestCase):
             username="regular_user", password="strongpass123", provider=self.provider_a
         )
 
+        self.superuser = User.objects.create_superuser(
+            username="admin", password="adminpass123", email="admin@example.com"
+        )
+
         self.provider_list_url = reverse("provider-list")
         self.invoice_list_url = reverse("invoice-list")
+
+    def test_access_providers_as_superuser(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        response = self.client.get(self.provider_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        provider_names = [provider["name"] for provider in response.data]
+        self.assertIn(self.provider_a.name, provider_names)
+        self.assertIn(self.provider_b.name, provider_names)
+
+    def test_access_providers_as_regular_user(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        response = self.client.get(self.provider_list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        provider_names = [provider["name"] for provider in response.data]
+
+        self.assertIn(self.provider_a.name, provider_names)
+        self.assertNotIn(self.provider_b.name, provider_names)
+        self.assertEqual(len(response.data), 1)
+
+        url = reverse("provider-detail", args=[self.provider_a.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], self.provider_a.name)
+
+        url = reverse("provider-detail", args=[self.provider_b.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertNotIn(self.provider_b.name, response.data)
+
+    def test_verify_liters(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        Barrel.objects.create(
+            provider=self.provider_a,
+            number="BAR-A1",
+            oil_type="Virgin",
+            liters=100,
+            billed=True,
+        )
+        Barrel.objects.create(
+            provider=self.provider_a,
+            number="BAR-A2",
+            oil_type="Ultra",
+            liters=20,
+            billed=False,
+        )
+
+        url = reverse("provider-detail", args=[self.provider_a.pk])
+        response = self.client.get(url)
+
+        serializer = ProviderSerializer()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("billed_liters", response.data)
+        self.assertIn("liters_to_bill", response.data)
+        self.assertEqual(
+            response.data["billed_liters"],
+            serializer.get_billed_liters(self.provider_a),
+        )
+        self.assertEqual(response.data["billed_liters"], 100)
+        self.assertEqual(
+            response.data["liters_to_bill"],
+            serializer.get_liters_to_bill(self.provider_a),
+        )
+        self.assertEqual(response.data["liters_to_bill"], 20)
 
     def test_provider_list_returns_name_and_tax_id(self):
         self.client.force_authenticate(user=self.user_a)
