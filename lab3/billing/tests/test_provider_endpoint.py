@@ -87,6 +87,21 @@ class ProviderEndpointTests(APITestCase):
     def test_verify_liters(self):
         self.client.force_authenticate(user=self.user_a)
 
+        Barrel.objects.create(
+            provider=self.provider_a,
+            number="BAR-A1",
+            oil_type="Virgin",
+            liters=100,
+            billed=True,
+        )
+        Barrel.objects.create(
+            provider=self.provider_a,
+            number="BAR-A2",
+            oil_type="Ultra",
+            liters=20,
+            billed=False,
+        )
+
         url = reverse("provider-detail", args=[self.provider_a.pk])
         response = self.client.get(url)
 
@@ -99,7 +114,12 @@ class ProviderEndpointTests(APITestCase):
             response.data["billed_liters"],
             serializer.get_billed_liters(self.provider_a),
         )
-        self.assertEqual(response.data["liters_to_bill"], 222)
+        self.assertEqual(response.data["billed_liters"], 100)
+        self.assertEqual(
+            response.data["liters_to_bill"],
+            serializer.get_liters_to_bill(self.provider_a),
+        )
+        self.assertEqual(response.data["liters_to_bill"], 20)
 
     def test_provider_list_returns_name_and_tax_id(self):
         self.client.force_authenticate(user=self.user_a)
