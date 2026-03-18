@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from billing.api.serializers import ProviderSerializer
 from billing.models import Barrel, Invoice, InvoiceLine, Provider
 
 User = get_user_model()
@@ -82,6 +83,23 @@ class ProviderEndpointTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertNotIn(self.provider_b.name, response.data)
+
+    def test_verify_liters(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        url = reverse("provider-detail", args=[self.provider_a.pk])
+        response = self.client.get(url)
+
+        serializer = ProviderSerializer()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("billed_liters", response.data)
+        self.assertIn("liters_to_bill", response.data)
+        self.assertEqual(
+            response.data["billed_liters"],
+            serializer.get_billed_liters(self.provider_a),
+        )
+        self.assertEqual(response.data["liters_to_bill"], 222)
 
     def test_provider_list_returns_name_and_tax_id(self):
         self.client.force_authenticate(user=self.user_a)
