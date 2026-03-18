@@ -91,6 +91,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("User is not linked to any provider.")
         serializer.save(provider_id=user.provider_id)
 
+    def perform_destroy(self, instance):
+        if instance.lines.exists():
+            raise PermissionDenied("Cannot delete invoice with lines")
+        super().perform_destroy(instance)
+
     @extend_schema(
         request=InvoiceLineCreateSerializer,
         responses={201: InvoiceLineNestedSerializer},

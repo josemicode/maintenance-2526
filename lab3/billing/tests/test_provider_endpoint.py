@@ -192,3 +192,31 @@ class ProviderEndpointTests(APITestCase):
         self.assertNotEqual(response.data["provider"], self.provider_b.id)
         created_barrel = Barrel.objects.get(number="BAR-030")
         self.assertEqual(created_barrel.provider, self.provider_a)
+
+    def test_delete_invoice_with_lines(self):
+        self.client.force_authenticate(user=self.user_a)
+
+        barrel = Barrel.objects.create(
+            provider=self.provider_a,
+            number="BAR-DEL",
+            oil_type="Test",
+            liters=30,
+            billed=False,
+        )
+        InvoiceLine.objects.create(
+            invoice=self.invoice_a,
+            barrel=barrel,
+            liters=30,
+            unit_price=Decimal("10.50"),
+            description="Line for deletion test",
+        )
+
+        url = reverse("invoice-detail", args=[self.invoice_a.pk])
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(
+            "Cannot delete invoice with lines",
+            response.data.get("detail", ""),
+        )
+        self.assertTrue(Invoice.objects.filter(pk=self.invoice_a.pk).exists())
