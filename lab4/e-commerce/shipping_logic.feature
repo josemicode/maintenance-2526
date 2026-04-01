@@ -5,7 +5,7 @@ Feature: Shipping Logic
 	Background:
 		Given the customer is logged in the site
 
-	Scenario: 
+	Scenario: Stock distribution
 		Given the customer has multiple products in the cart
 		And the stock of those items cannot be found in a single warehouse
 		When the customer attempts to place the order
