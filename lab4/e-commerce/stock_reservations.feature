@@ -7,16 +7,16 @@ Feature: Stock Reservations
 		And the customer's cart contains a product
 
 	@happy_path
-	Scenario: 
+	Scenario: Correct order
 		When the order is placed
 		Then an unit of said product is reserved for the customer for a total of 30 minutes
 		When the payment is processed within the time window
-		Then the order is confirmed
+		Then the order should be confirmed
 
 	@edge_case
-	Scenario:
+	Scenario: Order timeout
 		When the order is placed
 		Then an unit of said product is reserved for the customer for a total of 30 minutes
 		When the payment is not processed within the time window
-		Then the order is cancelled
-		And the stock is released
+		Then the order should be cancelled
+		And the stock should be released
